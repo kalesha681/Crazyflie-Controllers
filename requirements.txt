@@ -3,5 +3,5 @@ matplotlib
 scipy<2.0
 cvxpy
 osqp
-gym-pybullet-drones @ git+https://github.com/utiasDSL/gym-pybullet-drones.git@v2.0.0
+gym-pybullet-drones @ git+https://github.com/utiasDSL/gym-pybullet-drones.git
 pandas
