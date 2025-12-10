@@ -1,0 +1,7 @@
+numpy
+matplotlib
+gym-pybullet-drones
+scipy
+cvxpy
+osqp
+argparse

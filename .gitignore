@@ -1,0 +1,3 @@
+__pycache__/
+# *.png  <-- Commented out to allow plot uploads
+!outputs/plots/**/*.png
