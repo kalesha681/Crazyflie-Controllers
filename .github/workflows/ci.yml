@@ -25,8 +25,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e .
+
+    - name: Run Pytest Suite
+      run: |
+        pytest
 
     - name: Verify Step Response Simulation (Headless)
       run: |
         # Run step response to check imports, solver, and physics
-        python3 -m src.compare_controllers --trajectory step --no-gui
+        python3 scripts/compare_controllers.py --trajectory step --no-gui
