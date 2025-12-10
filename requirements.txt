@@ -1,6 +1,6 @@
-numpy<2.0
+numpy>=2.2
 matplotlib
-scipy<2.0
+scipy
 cvxpy
 osqp
 gym-pybullet-drones @ git+https://github.com/utiasDSL/gym-pybullet-drones.git
