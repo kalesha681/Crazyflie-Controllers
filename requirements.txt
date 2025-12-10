@@ -1,7 +1,7 @@
-numpy==2.2.6
-matplotlib==3.10.7
-scipy==1.15.3
-cvxpy==1.7.5
-osqp==1.0.5
-gym-pybullet-drones==2.0.0
-pandas==2.3.3
+numpy<2.0
+matplotlib
+scipy<2.0
+cvxpy
+osqp
+gym-pybullet-drones @ git+https://github.com/utiasDSL/gym-pybullet-drones.git@v2.0.0
+pandas
