@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Status](https://img.shields.io/badge/status-research_active-success.svg)
-![CI](https://github.com/yourusername/crazyflie-controllers/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/kalesha681/Crazyflie-Controllers/actions/workflows/ci.yml/badge.svg)
 
 **[📄 Read the Full Research Report](REPORT.md)**
 
@@ -36,8 +36,8 @@ See [REPORT.md](REPORT.md) for detailed Step Response analysis and methodology.
 
 ### 1. Installation
 ```bash
-git clone https://github.com/yourusername/crazyflie-controllers.git
-cd crazyflie-controllers
+git clone https://github.com/kalesha681/Crazyflie-Controllers.git
+cd Crazyflie-Controllers
 pip install -r requirements.txt
 ```
 
