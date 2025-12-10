@@ -1,3 +1,18 @@
+# Python
 __pycache__/
-# *.png  <-- Commented out to allow plot uploads
-!outputs/plots/**/*.png
+*.pyc
+
+# Data & Outputs (Keep structure, ignore content)
+outputs/data/*
+outputs/plots/*
+!outputs/data/.gitkeep
+!outputs/plots/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+*.egg-info/

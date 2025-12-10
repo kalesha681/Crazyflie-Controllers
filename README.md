@@ -1,76 +1,102 @@
-# Comparative Analysis of Control Strategies for Quadrotors
+# Crazyflie Controllers Benchmark Framework
 
+![CI](https://github.com/kalesha681/Crazyflie-Controllers/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Status](https://img.shields.io/badge/status-research_active-success.svg)
-![CI](https://github.com/kalesha681/Crazyflie-Controllers/actions/workflows/ci.yml/badge.svg)
+
+A reproducible, modular research framework for benchmarking linear and non-linear control architectures on the Bitcraze Crazyflie 2.1 quadrotor.
 
 **[📄 Read the Full Research Report](REPORT.md)**
 
 ## 🎯 Research Objective
-This repository serves as a **control systems research testbed** to strictly evaluate and compare linear vs. non-linear control architectures for Micro Aerial Vehicles (MAVs). The project was developed to analyze the trade-offs between computational efficiency, robustness, and tracking accuracy in dynamic flight regimes.
+To rigorously evaluate the performance trade-offs between:
+1.  **Cascaded PID** (Baseline, Linear)
+2.  **Sliding Mode Control (SMC)** (Robust, Non-linear)
+3.  **Linear Model Predictive Control (MPC)** (Optimal, Predictive)
 
-**Key Research Questions:**
-1.  Can **Sliding Mode Control (SMC)** effectively mitigate unmodeled dynamics compared to PID?
-2.  Does **Linear Model Predictive Control (LMPC)** provide superior trajectory tracking through lookahead, despite linear approximations?
+Key metrics include Root Mean Square Error (RMSE), control effort, and step response characteristics (Rise Time, Overshoot) under simulated dynamic conditions.
 
-## 🧪 Control Architectures
-Implementations verified on a **Bitcraze Crazyflie 2.1** (PyBullet Simulation):
+## 🏗️ Architecture
+This repository follows a strict `src/package` layout for reproducibility and abstraction.
 
-1.  **Cascaded PID (Baseline)**: Standard nested loops for position and attitude.
-2.  **Cascaded SMC (Robust)**: 6-DOF Sliding Mode Controller using geometric attitude control on $SO(3)$.
-3.  **Linear MPC (Optimal)**: Recursive feasibility-constrained Quadratic Programming (QP) solver using `cvxpy/OSQP` with multi-rate planning.
+```
+crazyflie_controllers/
+├── scripts/                # Execution and Analysis scripts
+│   ├── run_tracking.py     # Single simulation runner
+│   └── compare_controllers.py # Batch benchmark runner
+├── src/crazyflie_controllers/
+│   ├── controllers/        # Control Algorithms (Strict Interface)
+│   │   ├── pid_controller.py
+│   │   ├── smc_controller.py
+│   │   └── mpc_controller.py
+│   ├── trajectories/       # Geometric Reference Generators
+│   │   ├── circle.py
+│   │   ├── eight.py
+│   │   └── ...
+│   └── utils/              # Logging and Signal Processing
+│       └── logging.py
+├── outputs/                # Generated Data and Plots
+└── tests/                  # Unit Tests
+```
 
-## 📊 Performance Benchmarks
-*Results from Figure-8 Trajectory (12s period)*
+### Abstraction Contracts
+*   **Controllers** implement `BaseController`: `compute_control(state, ref, dt) -> rpm`.
+*   **Trajectories** implement `BaseTrajectory`: `get_target(t) -> (pos, vel, acc, yaw)`.
+*   **Logging** enforces a strict CSV schema ensuring `time, x, y, z, ...` column uniformity across experiments.
 
-| Controller | RMSE (m) | Characteristics |
-| :--- | :--- | :--- |
-| **PID** | 0.0343 | High lag, poor disturbance rejection. |
-| **MPC** | 0.0130 | Predictive turn-in, fast rise time ($t_r=0.35s$). |
-| **SMC** | **0.0120** | **Best Performance**, zero overshoot ($M_p < 0.1\%$). |
+## 🚀 Quick Start
 
-See [REPORT.md](REPORT.md) for detailed Step Response analysis and methodology.
-
-## 🛠️ Usage
-
-### 1. Installation
+### Installation
 ```bash
 git clone https://github.com/kalesha681/Crazyflie-Controllers.git
 cd Crazyflie-Controllers
 pip install -r requirements.txt
 ```
 
-### 2. Run Comparative Analysis
-Execute the full verification suite (PID vs SMC vs MPC):
+### Running Simulations
+
+**1. Single Trajectory Tracking**
+Visualize a specific controller on a specific trajectory.
 ```bash
-# Verify on Eight Trajectory (Tracking Performance)
-python3 -m src.compare_controllers --trajectory eight --no-gui
-
-# Verify Step Response (Transient Dynamics)
-python3 -m src.compare_controllers --trajectory step --no-gui
+python scripts/run_tracking.py --controller smc --trajectory eight
 ```
-Plots are saved to `outputs/plots/`.
 
-### 3. Individual Controller Testing
+**2. Full Benchmark Comparison**
+Run all controllers on a trajectory and generate comparison plots and metrics.
 ```bash
-# Run MPC on Triangle
-python3 -m src.run_tracking --controller mpc --trajectory triangle
+python scripts/compare_controllers.py --trajectory eight
 ```
 
-## 📂 Repository Structure
-```
-crazyflie-controllers/
-├── REPORT.md              # Academic Report (Abstract, Methodology, Results)
-├── src/
-│   ├── Controllers/       # Implementation details (SMC, MPC, PID)
-│   ├── trajectories/      # Trajectory generation (Step, Eight, etc.)
-│   └── compare_controllers.py  # Main comparative analysis script
-├── outputs/
-│   ├── plots/             # Performance graphs
-│   └── data/              # CSV log data
-└── README.md              # Overview
-```
+## 📊 Results Summary
+*Average RMSE on Figure-8 Trajectory (12s period)*
 
-## 📝 License
-MIT License.
+| Controller | RMSE (m) | Characteristics |
+| :--- | :--- | :--- |
+| **PID** | 0.0343 | Easy to tune, but lags dynamic reference. |
+| **MPC** | 0.0130 | Excellent tracking, computationally expensive. |
+| **SMC** | **0.0120** | **Best Performance**, robust to disturbances. |
+
+## 🧪 Controller Mathematical Formulations
+
+### 1. PID (Proportional-Integral-Derivative)
+Standard cascaded architecture: Outer position loop outputs desired velocity/attitude, Inner attitude loop outputs motor commands.
+
+### 2. SMC (Sliding Mode Control)
+Defines a sliding surface $s = \dot{e} + \lambda e$. Control law $u = -k \cdot \text{sgn}(s)$ forces dynamics onto this surface, providing exponential convergence and robustness to model mismatches.
+
+### 3. Linear MPC (Model Predictive Control)
+Solves a constrained Quadratic Program (QP) at each time step:
+$$
+\min_{u} \sum_{k=0}^{N} (x_k - x_{ref})^T Q (x_k - x_{ref}) + u_k^T R u_k
+$$
+Subject to linear dynamics $x_{k+1} = Ax_k + Bu_k$ and actuator constraints.
+
+## 🛠️ Reproducibility
+Random seeds are fixed (`np.random.seed(42)`) in all scripts to guarantee identical results on every run.
+All plots are generated strictly from the logged CSV data in `outputs/data/`, ensuring analysis integrity.
+
+## ⚠️ Disclaimer
+Simulations run in `gym-pybullet-drones` (PyBullet physics engine). While the Crazyflie model is accurate, real-world aerodynamics (ground effect, drag) may differ.
+
+---
+*Author: [Your Name]*
