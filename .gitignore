@@ -1,18 +1,19 @@
-# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.env
+.venv
+.vscode/
+.idea/
+.DS_Store
 
-# Data & Outputs (Keep structure, ignore content)
 outputs/data/*
 outputs/plots/*
 !outputs/data/.gitkeep
 !outputs/plots/.gitkeep
 
-# IDEs
-.vscode/
-.idea/
-
-# Environment
-.env
-venv/
-*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/

@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple
-from .base_trajectory import BaseTrajectory
+from crazyflie_controllers.trajectories.base_trajectory import BaseTrajectory
 
 class EightTrajectory(BaseTrajectory):
     def __init__(self, scale=1.0, z_height=1.0, period=12.0):
@@ -13,7 +13,7 @@ class EightTrajectory(BaseTrajectory):
         self.period = period
         self.omega = 2 * np.pi / period
 
-    def get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    def _get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
         # Position
         x = self.scale * np.sin(self.omega * t)
         y = (self.scale / 2.0) * np.sin(2 * self.omega * t)

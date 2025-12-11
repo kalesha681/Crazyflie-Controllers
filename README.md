@@ -58,13 +58,23 @@ pip install -r requirements.txt
 **1. Single Trajectory Tracking**
 Visualize a specific controller on a specific trajectory.
 ```bash
-python scripts/run_tracking.py --controller smc --trajectory eight
+# General Usage
+python scripts/run.py --controller [pid|smc|mpc] --trajectory [circle|eight|...]
+```
+
+**1. Single Trajectory Tracking**
+Visualize a specific controller on a specific trajectory.
+```bash
+python scripts/run.py --controller smc --trajectory eight
 ```
 
 **2. Full Benchmark Comparison**
-Run all controllers on a trajectory and generate comparison plots and metrics.
+(Note: Benchmark script has been consolidated. Use `run.py` purely for simulation/data gen, then analyze outputs).
+To generate data for all:
 ```bash
-python scripts/compare_controllers.py --trajectory eight
+python scripts/run.py --controller pid --trajectory eight --no-gui
+python scripts/run.py --controller smc --trajectory eight --no-gui
+python scripts/run.py --controller mpc --trajectory eight --no-gui
 ```
 
 ## 📊 Results Summary
@@ -99,4 +109,5 @@ All plots are generated strictly from the logged CSV data in `outputs/data/`, en
 Simulations run in `gym-pybullet-drones` (PyBullet physics engine). While the Crazyflie model is accurate, real-world aerodynamics (ground effect, drag) may differ.
 
 ---
-*Author: [Your Name]*
+*Author: Kalesha Shaik*
+Connect me on : [LinkedIn](www.linkedin.com/in/kalesha681)

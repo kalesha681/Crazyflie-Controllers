@@ -23,38 +23,46 @@ def test_logger_schema(tmp_path):
     csv_name = "test.csv"
     logger.save_as_csv(csv_name)
     
-    df = pd.read_csv(log_dir / csv_name)
+    # Read with comment skipping
+    df = pd.read_csv(log_dir / csv_name, comment='#')
     
     expected_cols = [
-        'time', 'x', 'y', 'z', 'vx', 'vy', 'vz', 
-        'roll', 'pitch', 'yaw', 
-        'x_ref', 'y_ref', 'z_ref', 
-        'error_x', 'error_y', 'error_z', 
-        'control_u1', 'control_u2', 'control_u3', 'control_u4'
+        'time', 
+        'x', 'y', 'z', 
+        'vx', 'vy', 'vz', 
+        'roll', 'pitch', 'yaw',
+        'x_ref', 'y_ref', 'z_ref',
+        'ex', 'ey', 'ez',
+        'u1', 'u2', 'u3', 'u4'
     ]
     
     assert list(df.columns) == expected_cols
 
-def test_logger_nan_handling(tmp_path):
-    """Verify Logger handles NaNs gracefully."""
+def test_logger_input_validation(tmp_path):
+    """Verify Logger raises errors on invalid inputs (NaNs/shapes)."""
     log_dir = tmp_path / "logs_nan"
     os.makedirs(log_dir)
     logger = Logger(str(log_dir))
     
     t = 0.5
-    pos = np.array([np.nan, 2., 3.]) # NaN input
+    pos = np.zeros(3)
     vel = np.zeros(3)
     rpy = np.zeros(3)
     target_pos = np.zeros(3)
     control_rpm = np.zeros(4)
     
-    logger.log(t, pos, vel, rpy, target_pos, control_rpm)
-    logger.save_as_csv("nan_test.csv")
+    # 1. Test NaN
+    bad_pos = pos.copy()
+    bad_pos[0] = np.nan
     
-    df = pd.read_csv(log_dir / "nan_test.csv")
-    assert np.isnan(df.iloc[0]['x'])
-    assert df.iloc[0]['y'] == 2.0
+    with pytest.raises(ValueError, match="NaN"):
+        logger.log(t, bad_pos, vel, rpy, target_pos, control_rpm)
+        
+    # 2. Test Shape
+    bad_rpm = np.zeros(3) # Wrong shape
+    with pytest.raises(AssertionError):
+        logger.log(t, pos, vel, rpy, target_pos, bad_rpm)
 
 def test_logger_buffer_clearing(tmp_path):
-    """Verify buffer logic if applicable (not strictly required by prompt but good practice)."""
+    """Verify buffer logic if applicable."""
     pass

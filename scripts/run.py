@@ -18,6 +18,7 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics
 
 # Core Imports
 from crazyflie_controllers.controllers.base_controller import BaseController
+from crazyflie_controllers.utils.logging import Logger
 from crazyflie_controllers.trajectories.base_trajectory import BaseTrajectory
 
 # Implementations
@@ -110,7 +111,9 @@ def run_simulation(config: ExperimentConfig, ctrl_name: str):
     action = np.zeros((1, 4))
     
     # 4. Simulation Loop
-    data_buffer = []
+    # Initialize Logger
+    log_dir = config.output_dir / "data" / config.trajectory
+    logger = Logger(str(log_dir))
     
     start_wall_time = time.time()
     
@@ -149,46 +152,32 @@ def run_simulation(config: ExperimentConfig, ctrl_name: str):
             p.stepSimulation()
             time.sleep(effective_dt)
             
-        # Log (RAM buffer)
-        # Schema: time, x, y, z, vx, vy, vz, roll, pitch, yaw, x_ref, y_ref, z_ref, ex, ey, ez, u1, u2, u3, u4
-        err = target_pos - cur_pos
-        row = [
-            t, 
-            cur_pos[0], cur_pos[1], cur_pos[2],
-            cur_vel[0], cur_vel[1], cur_vel[2],
-            rpy[0], rpy[1], rpy[2],
-            target_pos[0], target_pos[1], target_pos[2],
-            err[0], err[1], err[2],
-            rpm[0], rpm[1], rpm[2], rpm[3]
-        ]
-        data_buffer.append(row)
+        # Log using strict Logger
+        logger.log(
+            t=t,
+            pos=cur_pos,
+            vel=cur_vel,
+            rpy=np.array(rpy),
+            target_pos=target_pos,
+            control_rpm=rpm
+        )
         
     env.close()
     
     # 5. Save Data
     if config.save:
-        cols = [
-            "time", "x", "y", "z", "vx", "vy", "vz", "roll", "pitch", "yaw",
-            "x_ref", "y_ref", "z_ref", "ex", "ey", "ez", "u1", "u2", "u3", "u4"
-        ]
-        df = pd.DataFrame(data_buffer, columns=cols)
-        
         filename = f"{ctrl_name}_{config.trajectory}_dt{effective_dt:.4f}.csv"
-        filepath = config.output_dir / "data" / config.trajectory / filename
-        filepath.parent.mkdir(parents=True, exist_ok=True)
         
-        # Write format with Metadata Header
-        with open(filepath, 'w') as f:
-            f.write(f"# controller: {ctrl_name}\n")
-            f.write(f"# trajectory: {config.trajectory}\n")
-            f.write(f"# dt: {effective_dt}\n")
-            f.write(f"# duration: {config.duration}\n")
-            f.write(f"# seed: {config.seed}\n")
-            f.write(f"# timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            
-            df.to_csv(f, index=False)
-            
-        print(f"[pipeline] Saved CSV: {filepath}")
+        metadata = {
+            "controller": ctrl_name,
+            "trajectory": config.trajectory,
+            "dt": effective_dt,
+            "duration": config.duration,
+            "seed": config.seed
+        }
+        
+        logger.save_as_csv(filename, metadata=metadata)
+
 
 def generate_plots(config: ExperimentConfig):
     """

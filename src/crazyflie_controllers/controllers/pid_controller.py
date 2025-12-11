@@ -1,7 +1,7 @@
 import numpy as np
 from gym_pybullet_drones.control.DSLPIDControl import DSLPIDControl
 from gym_pybullet_drones.utils.enums import DroneModel
-from .base_controller import BaseController
+from crazyflie_controllers.controllers.base_controller import BaseController
 
 class PIDController(BaseController):
     """
@@ -22,28 +22,16 @@ class PIDController(BaseController):
     def reset(self):
         self.ctrl.reset()
 
-    def compute_control(self, 
-                       control_timestep: float, 
-                       cur_pos: np.ndarray, 
-                       cur_quat: np.ndarray, 
-                       cur_vel: np.ndarray, 
-                       cur_ang_vel: np.ndarray, 
-                       target_pos: np.ndarray, 
-                       target_vel: np.ndarray = None, 
-                       target_acc: np.ndarray = None,
-                       target_yaw: float = 0.0) -> np.ndarray:
-        
-        # Input Validation (Fail Loudly)
-        if control_timestep <= 0:
-            raise ValueError(f"Control timestep must be positive. Got {control_timestep}")
-        
-        for name, val in [("cur_pos", cur_pos), ("cur_vel", cur_vel), 
-                         ("cur_quat", cur_quat), ("cur_ang_vel", cur_ang_vel),
-                         ("target_pos", target_pos)]:
-            if not np.all(np.isfinite(val)):
-                raise ValueError(f"Input {name} contains NaN or Inf.")
-                
-        if target_vel is None: target_vel = np.zeros(3)
+    def _compute_control(self, 
+                        control_timestep: float, 
+                        cur_pos: np.ndarray, 
+                        cur_quat: np.ndarray, 
+                        cur_vel: np.ndarray, 
+                        cur_ang_vel: np.ndarray, 
+                        target_pos: np.ndarray, 
+                        target_vel: np.ndarray, 
+                        target_acc: np.ndarray,
+                        target_yaw: float) -> np.ndarray:
         
         # DSLPIDControl expects target_rpy
         target_rpy = np.array([0.0, 0.0, target_yaw])

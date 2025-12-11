@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple
-from .base_trajectory import BaseTrajectory
+from crazyflie_controllers.trajectories.base_trajectory import BaseTrajectory
 
 class TriangleTrajectory(BaseTrajectory):
     def __init__(self, height=1.0, period=6.0):
@@ -17,7 +17,7 @@ class TriangleTrajectory(BaseTrajectory):
         dds = 60 * t_norm - 180 * t2 + 120 * t3
         return s, ds, dds
 
-    def get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    def _get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
         if t < 2.0: 
             # Smooth Takeoff
             T = 2.0

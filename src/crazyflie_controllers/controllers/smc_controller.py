@@ -2,7 +2,7 @@ import numpy as np
 from gym_pybullet_drones.utils.enums import DroneModel
 from gym_pybullet_drones.control.DSLPIDControl import DSLPIDControl
 from scipy.spatial.transform import Rotation
-from .base_controller import BaseController
+from crazyflie_controllers.controllers.base_controller import BaseController
 
 class SMCController(BaseController):
     """
@@ -32,29 +32,16 @@ class SMCController(BaseController):
     def reset(self):
         self.base_ctrl.reset()
 
-    def compute_control(self, 
-                       control_timestep: float, 
-                       cur_pos: np.ndarray, 
-                       cur_quat: np.ndarray, 
-                       cur_vel: np.ndarray, 
-                       cur_ang_vel: np.ndarray, 
-                       target_pos: np.ndarray, 
-                       target_vel: np.ndarray = None, 
-                       target_acc: np.ndarray = None,
-                       target_yaw: float = 0.0) -> np.ndarray:
-        
-        # Input Validation (Fail Loudly)
-        if control_timestep <= 0:
-            raise ValueError(f"Control timestep must be positive. Got {control_timestep}")
-            
-        for name, val in [("cur_pos", cur_pos), ("cur_vel", cur_vel), 
-                         ("cur_quat", cur_quat), ("cur_ang_vel", cur_ang_vel),
-                         ("target_pos", target_pos)]:
-            if not np.all(np.isfinite(val)):
-                raise ValueError(f"Input {name} contains NaN or Inf.")
-                
-        if target_vel is None: target_vel = np.zeros(3)
-        if target_acc is None: target_acc = np.zeros(3)
+    def _compute_control(self, 
+                        control_timestep: float, 
+                        cur_pos: np.ndarray, 
+                        cur_quat: np.ndarray, 
+                        cur_vel: np.ndarray, 
+                        cur_ang_vel: np.ndarray, 
+                        target_pos: np.ndarray, 
+                        target_vel: np.ndarray, 
+                        target_acc: np.ndarray,
+                        target_yaw: float) -> np.ndarray:
         
         # --- 1. Position Control (SMC Outer Loop) ---
         e_p = target_pos - cur_pos

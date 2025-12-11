@@ -14,13 +14,13 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "numpy>=1.24",
-    "scipy",
-    "matplotlib",
-    "pandas",
+    "numpy==2.2.6",
+    "scipy==1.15.3",
+    "matplotlib==3.10.7",
+    "pandas==2.3.3",
     "gym-pybullet-drones",
-    "cvxpy",
-    "osqp"
+    "cvxpy==1.7.5",
+    "osqp==1.0.5"
 ]
 
 [tool.setuptools.packages.find]

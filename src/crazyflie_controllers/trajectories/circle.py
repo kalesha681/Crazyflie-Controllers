@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple
-from .base_trajectory import BaseTrajectory
+from crazyflie_controllers.trajectories.base_trajectory import BaseTrajectory
 
 class CircleTrajectory(BaseTrajectory):
     def __init__(self, radius=0.5, omega=1.0, height=1.0):
@@ -8,7 +8,7 @@ class CircleTrajectory(BaseTrajectory):
         self.omega = omega
         self.height = height
 
-    def get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    def _get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
         if t < 2.0: 
             # Smooth Takeoff: Cubic Ramp (Smoothstep)
             T = 2.0
