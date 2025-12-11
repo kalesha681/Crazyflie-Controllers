@@ -1,113 +1,192 @@
-# Crazyflie Controllers Benchmark Framework
-
+# 🌀 Crazyflie Controllers Benchmark Framework
 ![CI](https://github.com/kalesha681/Crazyflie-Controllers/actions/workflows/ci.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-A reproducible, modular research framework for benchmarking linear and non-linear control architectures on the Bitcraze Crazyflie 2.1 quadrotor.
+### A Research-Grade, Reproducible Pipeline for Evaluating Quadrotor Control Architectures
 
-**[📄 Read the Full Research Report](REPORT.md)**
+This repository implements a robust, extensible, and scientifically reproducible framework for benchmarking control algorithms on the [Bitcraze Crazyflie 2.1](https://www.bitcraze.io/products/crazyflie-2-1/) quadrotor using PyBullet simulation.
 
-## 🎯 Research Objective
-To rigorously evaluate the performance trade-offs between:
-1.  **Cascaded PID** (Baseline, Linear)
-2.  **Sliding Mode Control (SMC)** (Robust, Non-linear)
-3.  **Linear Model Predictive Control (MPC)** (Optimal, Predictive)
+The system is designed to meet research-lab software standards, featuring strict abstraction contracts, deterministic experiments, rigorous logging, and CI-verified correctness.
 
-Key metrics include Root Mean Square Error (RMSE), control effort, and step response characteristics (Rise Time, Overshoot) under simulated dynamic conditions.
+**📄 Full Technical Report → [REPORT.md](REPORT.md)**
 
-## 🏗️ Architecture
-This repository follows a strict `src/package` layout for reproducibility and abstraction.
+## 1. 🎯 Research Objective
+
+This project evaluates and compares three fundamental control strategies widely used in quadrotor research:
+
+*   **Cascaded PID Control** — Linear baseline
+*   **Sliding Mode Control (SMC)** — Nonlinear & robust
+*   **Linear Model Predictive Control (MPC)** — Optimal & predictive
+
+Controllers are scored on:
+*   RMSE (tracking error)
+*   Control Effort ($\int u^2 dt$)
+*   Transient Performance
+*   Failure-case behavior
+
+All experiments are **deterministic**, ensuring results are fully reproducible.
+
+## 2. 🧱 System Architecture
+
+The project follows a strict `src/` package layout, enabling clean packaging (`pip install -e .`), testability, and CI compliance.
 
 ```
 crazyflie_controllers/
-├── scripts/                # Execution and Analysis scripts
-│   ├── run_tracking.py     # Single simulation runner
-│   └── compare_controllers.py # Batch benchmark runner
+├── scripts/
+│   └── run.py                 # Unified CLI for all experiments
 ├── src/crazyflie_controllers/
-│   ├── controllers/        # Control Algorithms (Strict Interface)
-│   │   ├── pid_controller.py
-│   │   ├── smc_controller.py
-│   │   └── mpc_controller.py
-│   ├── trajectories/       # Geometric Reference Generators
-│   │   ├── circle.py
-│   │   ├── eight.py
-│   │   └── ...
-│   └── utils/              # Logging and Signal Processing
-│       └── logging.py
-├── outputs/                # Generated Data and Plots
-└── tests/                  # Unit Tests
+│   ├── controllers/           # PID, SMC, MPC (Template Method Pattern)
+│   ├── trajectories/          # Circle, Eight, Square, Triangle, Step
+│   └── utils/
+│       └── logging.py         # Strict CSV schema enforcement
+├── outputs/
+│   ├── data/                  # Generated logs (ignored by Git)
+│   └── plots/                 # Benchmark plots (ignored by Git)
+├── tests/                     # Comprehensive pytest suite
+└── requirements.txt
 ```
 
-### Abstraction Contracts
-*   **Controllers** implement `BaseController`: `compute_control(state, ref, dt) -> rpm`.
-*   **Trajectories** implement `BaseTrajectory`: `get_target(t) -> (pos, vel, acc, yaw)`.
-*   **Logging** enforces a strict CSV schema ensuring `time, x, y, z, ...` column uniformity across experiments.
+### ✔️ Key Design Principles
+*   **Absolute imports only** (no `sys.path` hacks)
+*   **Fail-fast error handling** for all controllers & trajectories
+*   **Strict reproducibility** via pinned dependencies + seeded RNG
+*   **CI governance** (linting, formatting, tests, packaging checks)
+*   **Separation of Concerns** between execution, algorithms, trajectories, logging
 
-## 🚀 Quick Start
+## 3. 🧩 Abstraction Contracts
+
+### Controller Interface (Template Method Pattern)
+All controllers inherit from `BaseController`, which enforces:
+```python
+compute_control(state, reference, dt) -> np.ndarray
+reset()
+```
+*   `compute_control()` performs validation (shapes, NaNs, types)
+*   `_compute_control()` contains controller-specific logic
+
+This ensures **Consistency** across controllers, **Zero tolerance** for silent errors, and **Clean extension** for future controllers.
+
+### Trajectory Interface
+Every trajectory inherits from `BaseTrajectory`:
+```python
+get_target(t) -> (pos, vel, acc, yaw)
+```
+Output must be **Deterministic**, **Finite**, and **Correctly shaped**.
+
+### Strict Logging Schema
+All logs follow an enforced 20-column CSV:
+```csv
+time,
+x, y, z, 
+vx, vy, vz,
+roll, pitch, yaw,
+x_ref, y_ref, z_ref,
+ex, ey, ez,
+u1, u2, u3, u4
+```
+The logger rejects malformed frames, rejects NaN/Inf values, injects metadata headers, and guarantees analysis integrity.
+
+## 4. 🚀 Quick Start
 
 ### Installation
 ```bash
+# Clone
 git clone https://github.com/kalesha681/Crazyflie-Controllers.git
 cd Crazyflie-Controllers
+
+# Install Environment (Virtualenv recommended)
 pip install -r requirements.txt
+
+# Install Package (Editable mode)
+pip install -e .
 ```
 
-### Running Simulations
+### Running Experiments
+The entire system runs through a single unified CLI: **`scripts/run.py`**
 
-**1. Single Trajectory Tracking**
-Visualize a specific controller on a specific trajectory.
+**1. Basic Run (Visual)**
+Simulate SMC controller on a Figure-8 trajectory with GUI enabled.
 ```bash
-# General Usage
-python scripts/run.py --controller [pid|smc|mpc] --trajectory [circle|eight|...]
+python scripts/run.py --controller smc --trajectory eight --gui
 ```
 
-**1. Single Trajectory Tracking**
-Visualize a specific controller on a specific trajectory.
+**2. Full Benchmark (Headless)**
+Generate data for all controllers on a Circle trajectory to compare performance.
 ```bash
-python scripts/run.py --controller smc --trajectory eight
+python scripts/run.py --controller pid smc mpc --trajectory circle --no-gui
 ```
 
-**2. Full Benchmark Comparison**
-(Note: Benchmark script has been consolidated. Use `run.py` purely for simulation/data gen, then analyze outputs).
-To generate data for all:
-```bash
-python scripts/run.py --controller pid --trajectory eight --no-gui
-python scripts/run.py --controller smc --trajectory eight --no-gui
-python scripts/run.py --controller mpc --trajectory eight --no-gui
-```
+**3. Generate Analysis**
+(Note: Analysis plots are auto-generated by the run script if `--plot` is active).
+Check `outputs/plots/` for results.
 
-## 📊 Results Summary
-*Average RMSE on Figure-8 Trajectory (12s period)*
-
-| Controller | RMSE (m) | Characteristics |
+### Command Options
+| Flag | Description | Default |
 | :--- | :--- | :--- |
-| **PID** | 0.0343 | Easy to tune, but lags dynamic reference. |
-| **MPC** | 0.0130 | Excellent tracking, computationally expensive. |
-| **SMC** | **0.0120** | **Best Performance**, robust to disturbances. |
+| `--controller` | List of controllers (`pid`, `smc`, `mpc`) | Required |
+| `--trajectory` | Reference path (`circle`, `eight`, `step`...) | Required |
+| `--duration` | Simulation time in seconds | `12.0` |
+| `--gui` | Enable PyBullet 3D visualization | `False` |
+| `--seed` | Random seed for deterministic physics | `42` |
 
-## 🧪 Controller Mathematical Formulations
+## 5. 📊 Results Summary
 
-### 1. PID (Proportional-Integral-Derivative)
-Standard cascaded architecture: Outer position loop outputs desired velocity/attitude, Inner attitude loop outputs motor commands.
+![Figure-8 Tracking](docs/assets/results_eight.png)
+*Figure 1: 2D Trajectory Tracking*
 
-### 2. SMC (Sliding Mode Control)
-Defines a sliding surface $s = \dot{e} + \lambda e$. Control law $u = -k \cdot \text{sgn}(s)$ forces dynamics onto this surface, providing exponential convergence and robustness to model mismatches.
+![Figure-8 Error](docs/assets/error_eight.png)
+*Figure 2: Position Error Norm over Time (Demonstrates SMC/MPC precision vs PID lag)*
 
-### 3. Linear MPC (Model Predictive Control)
-Solves a constrained Quadratic Program (QP) at each time step:
-$$
-\min_{u} \sum_{k=0}^{N} (x_k - x_{ref})^T Q (x_k - x_{ref}) + u_k^T R u_k
-$$
-Subject to linear dynamics $x_{k+1} = Ax_k + Bu_k$ and actuator constraints.
+*Average RMSE (Figure-8, 12s period)*
 
-## 🛠️ Reproducibility
-Random seeds are fixed (`np.random.seed(42)`) in all scripts to guarantee identical results on every run.
-All plots are generated strictly from the logged CSV data in `outputs/data/`, ensuring analysis integrity.
+| Controller | RMSE (m) | Notes |
+| :--- | :--- | :--- |
+| **PID** | 0.0343 | Linear baseline, phase lag |
+| **MPC** | 0.0130 | Strong predictive tracking |
+| **SMC** | **0.0120** | **Best performance**, robust to disturbances |
 
-## ⚠️ Disclaimer
-Simulations run in `gym-pybullet-drones` (PyBullet physics engine). While the Crazyflie model is accurate, real-world aerodynamics (ground effect, drag) may differ.
+A full discussion of controller behaviors—including failure cases—is provided in [REPORT.md](REPORT.md).
 
----
-*Author: Kalesha Shaik*
-Connect me on : [LinkedIn](www.linkedin.com/in/kalesha681)
+## 6. 🧪 Verification & CI Governance
+
+The repository is validated end-to-end using GitHub Actions:
+
+*   ✔️ **Black** — Style Enforcement
+*   ✔️ **Flake8** — Syntax & Logic Linting
+*   ✔️ **Pytest** — Automated Functional Tests
+*   ✔️ **Packaging** — `pip install .` verified in clean environment
+
+This ensures no regressions, no formatting drift, no broken imports, and no silent failures.
+
+## 7. 🔁 Reproducibility Policy
+
+This repository guarantees:
+*   Pinned dependencies
+*   Seeded experiments
+*   Deterministic behavior
+*   Fully regenerable outputs
+
+`outputs/` contains only derived artifacts, never manually edited data.
+
+## 8. 🛠️ Extending the Framework
+
+Future researchers may add:
+*   LQR, NMPC, Adaptive, or Backstepping controllers
+*   Disturbance injection modules
+*   Kalman Filters (EKF/UKF) for state estimation
+*   Real Crazyflie hardware adapters
+
+The template-method architecture ensures compatibility with minimal effort.
+
+## 9. 📜 Citation
+
+If you use this framework in research:
+> Shaik, Kalesha. "Crazyflie Controllers Benchmark Framework."
+> 2025. GitHub Repository.
+
+### 👤 Author
+
+**Kalesha Shaik**
+Connect with me on: [LinkedIn](https://www.linkedin.com/in/kalesha681)
