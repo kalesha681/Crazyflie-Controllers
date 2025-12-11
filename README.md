@@ -1,4 +1,4 @@
-# 🌀 Crazyflie Controllers Benchmark Framework
+# Crazyflie Controllers Benchmark Framework
 ![CI](https://github.com/kalesha681/Crazyflie-Controllers/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -10,9 +10,9 @@ This repository implements a robust, extensible, and scientifically reproducible
 
 The system is designed to meet research-lab software standards, featuring strict abstraction contracts, deterministic experiments, rigorous logging, and CI-verified correctness.
 
-**📄 Full Technical Report → [REPORT.md](REPORT.md)**
+**Full Technical Report → [REPORT.md](REPORT.md)**
 
-## 1. 🎯 Research Objective
+## 1. Research Objective
 
 This project evaluates and compares three fundamental control strategies widely used in quadrotor research:
 
@@ -28,7 +28,7 @@ Controllers are scored on:
 
 All experiments are **deterministic**, ensuring results are fully reproducible.
 
-## 2. 🧱 System Architecture
+## 2. System Architecture
 
 The project follows a strict `src/` package layout, enabling clean packaging (`pip install -e .`), testability, and CI compliance.
 
@@ -48,14 +48,14 @@ crazyflie_controllers/
 └── requirements.txt
 ```
 
-### ✔️ Key Design Principles
+### Key Design Principles
 *   **Absolute imports only** (no `sys.path` hacks)
 *   **Fail-fast error handling** for all controllers & trajectories
 *   **Strict reproducibility** via pinned dependencies + seeded RNG
 *   **CI governance** (linting, formatting, tests, packaging checks)
 *   **Separation of Concerns** between execution, algorithms, trajectories, logging
 
-## 3. 🧩 Abstraction Contracts
+## 3. Abstraction Contracts
 
 ### Controller Interface (Template Method Pattern)
 All controllers inherit from `BaseController`, which enforces:
@@ -88,7 +88,7 @@ u1, u2, u3, u4
 ```
 The logger rejects malformed frames, rejects NaN/Inf values, injects metadata headers, and guarantees analysis integrity.
 
-## 4. 🚀 Quick Start
+## 4. Quick Start
 
 ### Installation
 ```bash
@@ -131,7 +131,7 @@ Check `outputs/plots/` for results.
 | `--gui` | Enable PyBullet 3D visualization | `False` |
 | `--seed` | Random seed for deterministic physics | `42` |
 
-## 5. 📊 Results Summary
+## 5. Results Summary
 
 ![Figure-8 Tracking](docs/assets/results_eight.png)
 *Figure 1: 2D Trajectory Tracking*
@@ -149,18 +149,18 @@ Check `outputs/plots/` for results.
 
 A full discussion of controller behaviors—including failure cases—is provided in [REPORT.md](REPORT.md).
 
-## 6. 🧪 Verification & CI Governance
+## 6. Verification & CI Governance
 
 The repository is validated end-to-end using GitHub Actions:
 
-*   ✔️ **Black** — Style Enforcement
-*   ✔️ **Flake8** — Syntax & Logic Linting
-*   ✔️ **Pytest** — Automated Functional Tests
-*   ✔️ **Packaging** — `pip install .` verified in clean environment
+*   **Black** — Style Enforcement
+*   **Flake8** — Syntax & Logic Linting
+*   **Pytest** — Automated Functional Tests
+*   **Packaging** — `pip install .` verified in clean environment
 
 This ensures no regressions, no formatting drift, no broken imports, and no silent failures.
 
-## 7. 🔁 Reproducibility Policy
+## 7. Reproducibility Policy
 
 This repository guarantees:
 *   Pinned dependencies
@@ -170,7 +170,7 @@ This repository guarantees:
 
 `outputs/` contains only derived artifacts, never manually edited data.
 
-## 8. 🛠️ Extending the Framework
+## 8. Extending the Framework
 
 Future researchers may add:
 *   LQR, NMPC, Adaptive, or Backstepping controllers
@@ -180,13 +180,13 @@ Future researchers may add:
 
 The template-method architecture ensures compatibility with minimal effort.
 
-## 9. 📜 Citation
+## 9. Citation
 
 If you use this framework in research:
 > Shaik, Kalesha. "Crazyflie Controllers Benchmark Framework."
 > 2025. GitHub Repository.
 
-### 👤 Author
+### Author
 
 **Kalesha Shaik**
 Connect with me on: [LinkedIn](https://www.linkedin.com/in/kalesha681)
