@@ -2,6 +2,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from typing import Tuple
 
+
 class BaseTrajectory(ABC):
     """
     Abstract Base Class for all trajectories.
@@ -22,28 +23,32 @@ class BaseTrajectory(ABC):
             - vel (np.ndarray): [vx, vy, vz] velocity.
             - acc (np.ndarray): [ax, ay, az] acceleration.
             - yaw (float): Desired yaw angle (radians).
-            
+
         Raises:
             ValueError: If outputs have incorrect shapes or types.
         """
         # Delegate
         pos, vel, acc, yaw = self._get_target(t)
-        
+
         # Runtime Output Validation
         for name, val in [("pos", pos), ("vel", vel), ("acc", acc)]:
             if not isinstance(val, np.ndarray):
                 raise TypeError(f"Trajectory output {name} must be a numpy array.")
             if val.shape != (3,):
-                raise ValueError(f"Trajectory output {name} must be shape (3,), got {val.shape}")
+                raise ValueError(
+                    f"Trajectory output {name} must be shape (3,), got {val.shape}"
+                )
             if not np.all(np.isfinite(val)):
                 raise ValueError(f"Trajectory output {name} contains NaN or Inf.")
-                
+
         if not isinstance(yaw, float):
-             # Try formatting if it's a numpy scalar
-             try:
-                 yaw = float(yaw)
-             except:
-                 raise TypeError(f"Trajectory output yaw must be a float, got {type(yaw)}")
+            # Try formatting if it's a numpy scalar
+            try:
+                yaw = float(yaw)
+            except:
+                raise TypeError(
+                    f"Trajectory output yaw must be a float, got {type(yaw)}"
+                )
 
         return pos, vel, acc, yaw
 

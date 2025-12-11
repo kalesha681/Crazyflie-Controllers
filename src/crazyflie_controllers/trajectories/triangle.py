@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple
 from crazyflie_controllers.trajectories.base_trajectory import BaseTrajectory
 
+
 class TriangleTrajectory(BaseTrajectory):
     def __init__(self, height=1.0, period=6.0):
         self.height = height
@@ -18,54 +19,59 @@ class TriangleTrajectory(BaseTrajectory):
         return s, ds, dds
 
     def _get_target(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
-        if t < 2.0: 
+        if t < 2.0:
             # Smooth Takeoff
             T = 2.0
             t_norm = t / T
             s, ds, dds = self._quintic_scaling(t_norm)
-            
+
             z_ramp = s * self.height
             vz_ramp = ds * self.height / T
             az_ramp = dds * self.height / (T**2)
-            
-            return np.array([0.0, 0.0, z_ramp]), np.array([0.0, 0.0, vz_ramp]), np.array([0.0, 0.0, az_ramp]), 0.0
-        
+
+            return (
+                np.array([0.0, 0.0, z_ramp]),
+                np.array([0.0, 0.0, vz_ramp]),
+                np.array([0.0, 0.0, az_ramp]),
+                0.0,
+            )
+
         t_flight = t - 2.0
         stage = (t_flight % self.period) / self.time_per_leg
-        
+
         pos = np.array([0.0, 0.0, self.height])
         vel = np.array([0.0, 0.0, 0.0])
         acc = np.array([0.0, 0.0, 0.0])
-        
+
         # Vertices: (0,0) -> (1, 0.5) -> (1, -0.5) -> (0,0)
         p0 = np.array([0.0, 0.0])
         p1 = np.array([1.0, 0.5])
         p2 = np.array([1.0, -0.5])
-        
+
         # Determine current leg
-        if stage < 1: 
+        if stage < 1:
             # Leg 1: p0 -> p1
             start, end = p0, p1
             progress = stage
-        elif stage < 2: 
+        elif stage < 2:
             # Leg 2: p1 -> p2
             start, end = p1, p2
             progress = stage - 1.0
-        else:           
+        else:
             # Leg 3: p2 -> p0
             start, end = p2, p0
             progress = stage - 2.0
-            
+
         # Apply quintic scaling
         s, ds, dds = self._quintic_scaling(progress)
-        
+
         # Position
         pos[:2] = start + s * (end - start)
-        
+
         # Velocity
         vel[:2] = (end - start) * ds / self.time_per_leg
-        
+
         # Acceleration
         acc[:2] = (end - start) * dds / (self.time_per_leg**2)
-            
+
         return pos, vel, acc, 0.0

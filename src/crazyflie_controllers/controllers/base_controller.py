@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
+
 class BaseController(ABC):
     """
     Abstract Base Class for all controllers.
@@ -14,16 +15,18 @@ class BaseController(ABC):
         """
         pass
 
-    def compute_control(self, 
-                        control_timestep: float, 
-                        cur_pos: np.ndarray, 
-                        cur_quat: np.ndarray, 
-                        cur_vel: np.ndarray, 
-                        cur_ang_vel: np.ndarray, 
-                        target_pos: np.ndarray, 
-                        target_vel: np.ndarray = None, 
-                        target_acc: np.ndarray = None,
-                        target_yaw: float = 0.0) -> np.ndarray:
+    def compute_control(
+        self,
+        control_timestep: float,
+        cur_pos: np.ndarray,
+        cur_quat: np.ndarray,
+        cur_vel: np.ndarray,
+        cur_ang_vel: np.ndarray,
+        target_pos: np.ndarray,
+        target_vel: np.ndarray = None,
+        target_acc: np.ndarray = None,
+        target_yaw: float = 0.0,
+    ) -> np.ndarray:
         """
         Computes the control action (RPMs) for the quadrotor.
         This Public method runs strict input validation before calling the internal implementation.
@@ -40,30 +43,39 @@ class BaseController(ABC):
 
         Returns:
             np.ndarray: Motor RPM commands [m1, m2, m3, m4].
-        
+
         Raises:
             ValueError: If inputs contain NaNs, Infs, or have incorrect shapes.
         """
         # 1. Runtime Input Validation
         if control_timestep <= 0:
-            raise ValueError(f"Control timestep must be positive. Got {control_timestep}")
-            
-        for name, val in [("cur_pos", cur_pos), ("cur_vel", cur_vel), ("cur_ang_vel", cur_ang_vel), ("target_pos", target_pos)]:
-             if not isinstance(val, np.ndarray):
-                 raise TypeError(f"{name} must be a numpy array.")
-             if val.shape != (3,):
-                 raise ValueError(f"{name} must be shape (3,), got {val.shape}")
-             if not np.all(np.isfinite(val)):
-                 raise ValueError(f"Input {name} contains NaN or Inf.")
-                 
+            raise ValueError(
+                f"Control timestep must be positive. Got {control_timestep}"
+            )
+
+        for name, val in [
+            ("cur_pos", cur_pos),
+            ("cur_vel", cur_vel),
+            ("cur_ang_vel", cur_ang_vel),
+            ("target_pos", target_pos),
+        ]:
+            if not isinstance(val, np.ndarray):
+                raise TypeError(f"{name} must be a numpy array.")
+            if val.shape != (3,):
+                raise ValueError(f"{name} must be shape (3,), got {val.shape}")
+            if not np.all(np.isfinite(val)):
+                raise ValueError(f"Input {name} contains NaN or Inf.")
+
         if cur_quat.shape != (4,):
-             raise ValueError(f"cur_quat must be shape (4,), got {cur_quat.shape}")
+            raise ValueError(f"cur_quat must be shape (4,), got {cur_quat.shape}")
         if not np.all(np.isfinite(cur_quat)):
-             raise ValueError("cur_quat contains NaN or Inf.")
+            raise ValueError("cur_quat contains NaN or Inf.")
 
         # Handle simplified defaults for subclasses
-        if target_vel is None: target_vel = np.zeros(3)
-        if target_acc is None: target_acc = np.zeros(3)
+        if target_vel is None:
+            target_vel = np.zeros(3)
+        if target_acc is None:
+            target_acc = np.zeros(3)
 
         # 2. Delegate to Implementation
         rpm = self._compute_control(
@@ -75,28 +87,30 @@ class BaseController(ABC):
             target_pos,
             target_vel,
             target_acc,
-            target_yaw
+            target_yaw,
         )
-        
+
         # 3. Output Validation
         if not isinstance(rpm, np.ndarray):
-             raise TypeError("Controller must return a numpy array.")
+            raise TypeError("Controller must return a numpy array.")
         if rpm.shape != (4,):
-             raise ValueError(f"Controller output must be shape (4,), got {rpm.shape}")
-        
+            raise ValueError(f"Controller output must be shape (4,), got {rpm.shape}")
+
         return rpm
 
     @abstractmethod
-    def _compute_control(self, 
-                         control_timestep: float, 
-                         cur_pos: np.ndarray, 
-                         cur_quat: np.ndarray, 
-                         cur_vel: np.ndarray, 
-                         cur_ang_vel: np.ndarray, 
-                         target_pos: np.ndarray, 
-                         target_vel: np.ndarray, 
-                         target_acc: np.ndarray,
-                         target_yaw: float) -> np.ndarray:
+    def _compute_control(
+        self,
+        control_timestep: float,
+        cur_pos: np.ndarray,
+        cur_quat: np.ndarray,
+        cur_vel: np.ndarray,
+        cur_ang_vel: np.ndarray,
+        target_pos: np.ndarray,
+        target_vel: np.ndarray,
+        target_acc: np.ndarray,
+        target_yaw: float,
+    ) -> np.ndarray:
         """
         Internal implementation of the control law.
         Inputs are guaranteed to be valid and non-None.
