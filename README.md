@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-## 📖 Project Overview
+## Project Overview
 
 This repository provides a **research-grade, reproducible framework** for simulating and benchmarking control algorithms on the [Bitcraze Crazyflie 2.1](https://www.bitcraze.io/products/crazyflie-2-1/) quadrotor.
 
@@ -18,30 +18,30 @@ We implement and compare three fundamental control architectures:
 
 ---
 
-## 📂 Directory Structure
+## Directory Structure
 
 Here is a guide to what you will find in this repository:
 
 ```
 crazyflie_controllers/
 ├── scripts/
-│   └── run.py                 # 🚀 The main entry point. Run this to start simulations!
-├── src/crazyflie_controllers/ # 📦 The core source code package
-│   ├── controllers/           # 🧠 Implementation of PID, SMC, and MPC algorithms
-│   ├── trajectories/          # 📉 Trajectory definitions (Circle, Figure-8, etc.)
-│   └── utils/                 # 🛠️ Helper tools for logging and configuration
+│   └── run.py                 # The main entry point. Run this to start simulations!
+├── src/crazyflie_controllers/ # The core source code package
+│   ├── controllers/           # Implementation of PID, SMC, and MPC algorithms
+│   ├── trajectories/          # Trajectory definitions (Circle, Figure-8, etc.)
+│   └── utils/                 # Helper tools for logging and configuration
 ├── outputs/
-│   ├── data/                  # 💾 Generated CSV log files from experiments
-│   └── plots/                 # 📊 Auto-generated graphs and plots
-├── tests/                     # ✅ Automated tests to ensure code quality
-├── docs/                      # 📄 Documentation assets (images, references)
-├── .github/                   # 🤖 CI/CD configuration for GitHub Actions
-└── requirements.txt           # 📋 List of Python dependencies
+│   ├── data/                  # Generated CSV log files from experiments
+│   └── plots/                 # Auto-generated graphs and plots
+├── tests/                     # Automated tests to ensure code quality
+├── docs/                      # Documentation assets (images, references)
+├── .github/                   # CI/CD configuration for GitHub Actions
+└── requirements.txt           # List of Python dependencies
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 *   **Operating System**: Linux (Ubuntu 20.04/22.04 recommended), macOS, or Windows (WSL2).
@@ -76,7 +76,7 @@ crazyflie_controllers/
 
 ---
 
-## 🧠 Theory & Mathematics
+## Theory & Mathematics
 
 ### System Dynamics
 The Crazyflie is modeled as a 6-DOF rigid body. The state vector is $x = [p, v, q, \omega]^T$, where $p$ is position, $v$ is velocity, $q$ is attitude (quaternion), and $\omega$ is angular velocity.
@@ -105,7 +105,7 @@ MPC solves an optimization problem at every time step to find the best sequence 
 
 ---
 
-## 💻 Usage
+## Usage
 
 The entire system is controlled via the `scripts/run.py` script.
 
@@ -133,7 +133,7 @@ python scripts/run.py --controller pid smc mpc --trajectory circle --no-gui
 
 ---
 
-## 📊 Results & Analysis
+## Results & Analysis
 
 We compared controllers on a standardized Figure-8 trajectory.
 
@@ -155,7 +155,7 @@ We compared controllers on a standardized Figure-8 trajectory.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 1.  Fork the repo.
@@ -163,14 +163,15 @@ Contributions are welcome! Please follow these steps:
 3.  Commit changes: `git commit -m "Add Backstepping controller"`.
 4.  Push to branch: `git push origin feature-new-controller`.
 5.  Submit a Pull Request.
-## 🔮 Future Work
+
+## Future Work
 
 *   Implementation of **Non-linear MPC (NMPC)** to handle full $SO(3)$ dynamics.
 *   **Domain Randomization** for more robust Sim-to-Real transfer.
 *   **Hardware-in-the-loop** verification on a physical Crazyflie fleet.
 *   Integration with **ROS2** for swarm control.
 
-## 📄 Citation
+## Citation
 
 If you use this work in your research or studies, please cite:
 > Shaik, Kalesha. "Crazyflie Controller Benchmark Framework". 2025.
